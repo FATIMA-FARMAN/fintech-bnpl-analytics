@@ -1,0 +1,128 @@
+version: 2
+
+models:
+  - name: stg_transactions
+    description: "Staging model for payment transactions with cleaned and standardized fields"
+    columns:
+      - name: transaction_id
+        description: "Unique identifier for each transaction"
+        tests:
+          - unique
+          - not_null
+      
+      - name: transaction_status
+        description: "Current status of the transaction"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['authorized', 'captured', 'settled', 'failed', 'refunded', 'cancelled']
+      
+      - name: order_amount
+        description: "Total order value in local currency"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      
+      - name: transaction_date
+        description: "Date of the transaction"
+        tests:
+          - not_null
+      
+      - name: merchant_id
+        description: "Foreign key to merchant"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_merchants')
+              field: merchant_id
+      
+      - name: customer_id
+        description: "Foreign key to customer"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+
+  - name: stg_merchants
+    description: "Staging model for merchant master data"
+    columns:
+      - name: merchant_id
+        description: "Unique identifier for each merchant"
+        tests:
+          - unique
+          - not_null
+      
+      - name: merchant_name
+        description: "Official merchant name"
+        tests:
+          - not_null
+      
+      - name: merchant_category
+        description: "Business category"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['fashion', 'electronics', 'home', 'beauty', 'sports']
+      
+      - name: commission_rate
+        description: "Commission rate charged by Tabby"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "commission_rate >= 0 and commission_rate <= 1"
+
+  - name: stg_customers
+    description: "Staging model for customer master data"
+    columns:
+      - name: customer_id
+        description: "Unique identifier for each customer"
+        tests:
+          - unique
+          - not_null
+      
+      - name: customer_segment
+        description: "Customer value segment"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['premium', 'standard', 'new']
+      
+      - name: credit_limit
+        description: "Maximum credit limit for BNPL"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "> 0"
+
+  - name: stg_repayment_schedules
+    description: "Staging model for BNPL installment repayment schedules"
+    columns:
+      - name: repayment_id
+        description: "Unique identifier for each repayment record"
+        tests:
+          - unique
+          - not_null
+      
+      - name: transaction_id
+        description: "Foreign key to transaction"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_transactions')
+              field: transaction_id
+      
+      - name: installment_number
+        description: "Installment sequence number (1, 2, 3, or 4)"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "installment_number >= 1 and installment_number <= 4"
+      
+      - name: installment_amount
+        description: "Amount due for this installment"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "> 0"
