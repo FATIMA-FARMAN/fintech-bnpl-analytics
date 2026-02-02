@@ -1,5 +1,17 @@
-.DS_Store
-*.bak
-.venv/
+# dbt
+dbt_packages/
 target/
 logs/
+*.duckdb
+
+# backups
+*.bak
+*.bak2
+*.backup
+
+# python
+__pycache__/
+.venv/
+
+# macOS
+.DS_Store
