@@ -6,7 +6,7 @@ Production-grade Buy Now Pay Later (BNPL) analytics domain built with dbt, model
 
 Built a complete analytics platform processing **$9.1M GMV** across **50,000 transactions** for a BNPL fintech company, implementing:
 - **12 dbt models** (staging → intermediate → marts)
-- **69 data quality tests** (100% pass rate)
+- **60 data quality tests** (100% pass rate)
 - **Incremental processing** with partitioning and clustering
 - **Full data lineage** documentation
 
@@ -78,7 +78,7 @@ payments_analytics/
 
 ## ✅ Data Quality
 
-**69 automated tests ensuring:**
+**60 automated tests ensuring:**
 - Primary key uniqueness
 - Not null constraints
 - Referential integrity
@@ -147,7 +147,7 @@ payments_analytics:
 
 ### Test Results
 ![Test Results](docs/images/test_results.png)
-*69 passing data quality tests ensuring data integrity*
+*60 passing data quality tests ensuring data integrity*
 
 ## 🎓 Skills Demonstrated
 
