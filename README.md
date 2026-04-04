@@ -1,240 +1,191 @@
-# 🏦 Fintech BNPL Analytics Platform
+# FinTech BNPL Analytics Platform — Checkout & Payment Intelligence
 
-Production-grade Buy Now Pay Later (BNPL) analytics domain built with dbt, modeling Tabby's payment infrastructure. Demonstrates end-to-end data engineering from raw transactions to executive dashboards.
+> Built to mirror the analytics domain for a production BNPL platform — modelling the **core purchase flow**, checkout performance, merchant health, and customer risk scoring across $9.1M GMV and 50K transactions.
 
-## 📊 Project Overview
-
-Built a complete analytics platform processing **$9.1M GMV** across **50,000 transactions** for a BNPL fintech company, implementing:
-- **12 dbt models** (staging → intermediate → marts)
-- **60 data quality tests** (100% pass rate)
-- **Incremental processing** with partitioning and clustering
-- **Full data lineage** documentation
-
-## 🏗️ Architecture
-```
-Seeds (CSV)          Staging           Intermediate              Marts
-─────────────        ───────────       ──────────────           ─────────────
-transactions    →    stg_transactions                      →    fct_payment_transactions
-                                   ↘                             (incremental, partitioned)
-merchants       →    stg_merchants  →  int_transaction_enriched
-                                   ↗                         →   dim_merchant
-customers       →    stg_customers  →  int_customer_behavior →   dim_customer
-                                                             
-repayments      →    stg_repayments →  int_merchant_metrics  →   fct_repayment_performance
-                                                             →   fct_merchant_gmv_daily
-```
-
-## 📈 Key Metrics
-
-- **Total GMV:** $9,124,346.19
-- **Transactions:** 50,000
-- **BNPL Adoption Rate:** 77.3%
-- **On-Time Payment Rate:** 93.7%
-- **Default Rate:** 0.4%
-- **Merchants:** 40 (Fashion, Electronics, Home, Beauty)
-- **Customers:** 5,000 (Premium, Standard, New segments)
-
-## 🛠️ Tech Stack
-
-- **Transformation:** dbt (Data Build Tool)
-- **Database:** DuckDB (local), BigQuery-ready
-- **Orchestration:** Airflow DAG (daily 2 AM UTC)
-- **Testing:** dbt_utils, dbt_expectations
-- **Languages:** SQL, Python, YAML
-- **Version Control:** Git, GitHub
-
-## 📁 Project Structure
-```
-payments_analytics/
-├── models/
-│   ├── staging/          # 4 models - data cleaning
-│   ├── intermediate/     # 3 models - business logic
-│   └── marts/            # 5 models - fact tables & dimensions
-├── seeds/                # 4 CSV files (~200K rows)
-├── tests/                # Custom data quality tests
-├── dags/                 # Airflow orchestration
-└── docs/                 # Project documentation
-```
-
-## 🎯 Models
-
-### Staging Layer (Views)
-- `stg_transactions` - Cleaned transaction data
-- `stg_merchants` - Merchant master data
-- `stg_customers` - Customer demographics
-- `stg_repayment_schedules` - BNPL installment tracking
-
-### Intermediate Layer (Views)
-- `int_transaction_enriched` - Transactions with merchant/customer context
-- `int_customer_repayment_behavior` - Payment patterns by customer
-- `int_merchant_metrics` - Merchant performance aggregations
-
-### Marts Layer (Tables)
-- `fct_payment_transactions` - Core fact table (incremental, partitioned by date)
-- `fct_repayment_performance` - BNPL repayment analytics
-- `fct_merchant_gmv_daily` - Daily merchant performance
-- `dim_merchant` - Merchant dimension with lifetime metrics
-- `dim_customer` - Customer dimension with risk scores
-
-## ✅ Data Quality
-
-**60 automated tests ensuring:**
-- Primary key uniqueness
-- Not null constraints
-- Referential integrity
-- Value range validations
-- Accepted value lists
-- Custom business logic (GMV consistency, payment status flow)
-
-**Test Results:** ✅ 100% Pass Rate
-
-## 🚀 Quick Start
-
-### Prerequisites
-```bash
-# Install dbt with DuckDB adapter
-pip install dbt-duckdb
-
-# Or for BigQuery
-pip install dbt-bigquery
-```
-
-### Setup
-```bash
-# Clone repository
-git clone https://github.com/FATIMA-FARMAN/fintech-bnpl-analytics.git
-cd fintech-bnpl-analytics
-
-# Install dbt packages
-dbt deps
-
-# Load seed data
-dbt seed
-
-# Run all models
-dbt run
-
-# Run tests
-dbt test
-
-# Generate documentation
-dbt docs generate
-dbt docs serve  # Opens at localhost:8080
-```
-
-### Configuration
-
-Create `~/.dbt/profiles.yml`:
-```yaml
-payments_analytics:
-  target: dev
-  outputs:
-    dev:
-      type: duckdb
-      path: payments_analytics.duckdb
-      threads: 4
-```
-
-## 📸 Screenshots
-
-### Data Lineage Graph
-![Data Lineage](docs/images/lineage_graph.png)
-*Full data flow from seeds to marts showing 12 models and dependencies*
-
-### Model Documentation
-![Model Details](docs/images/model_details.png)
-*Detailed model page showing columns, tests, and compiled SQL*
-
-### Test Results
-![Test Results](docs/images/test_results.png)
-*60 passing data quality tests ensuring data integrity*
-
-## 🎓 Skills Demonstrated
-
-### Analytics Engineering
-- dbt best practices (staging → intermediate → marts)
-- Incremental materialization strategies
-- Data quality testing frameworks
-- Documentation as code
-
-### Data Modeling
-- Dimensional modeling (facts & dimensions)
-- Slowly changing dimensions
-- Surrogate key management
-- Star schema design
-
-### SQL Mastery
-- Window functions for payment tracking
-- Complex aggregations for metrics
-- CTEs for readable code
-- Performance optimization (partitioning, clustering)
-
-### Domain Expertise
-- BNPL business model understanding
-- Payment processing workflows
-- Risk analytics (fraud detection, default prediction)
-- Merchant performance metrics
-
-## 🔄 Orchestration
-
-**Airflow DAG:**
-- Runs daily at 2 AM UTC
-- Task groups: staging → intermediate → marts → QA
-- Error handling and alerting
-- Comprehensive logging
-
-## 📊 Sample Queries
-
-**Merchant Performance:**
-```sql
-SELECT 
-    merchant_name,
-    total_gmv,
-    bnpl_rate,
-    capture_rate,
-    merchant_tier
-FROM dim_merchant
-WHERE merchant_tier = 'tier_1_elite'
-ORDER BY total_gmv DESC;
-```
-
-**BNPL Repayment Health:**
-```sql
-SELECT 
-    customer_segment,
-    COUNT(*) as total_plans,
-    AVG(on_time_payment_rate) as avg_on_time_rate,
-    SUM(CASE WHEN payment_status = 'defaulted' THEN 1 ELSE 0 END) as defaults
-FROM fct_repayment_performance
-GROUP BY customer_segment;
-```
-
-## 🎯 Business Impact
-
-This platform enables:
-- **Real-time merchant performance tracking**
-- **Customer risk scoring for credit decisions**
-- **BNPL portfolio health monitoring**
-- **Fraud detection and prevention**
-- **Executive dashboards for data-driven decisions**
-
-## 📝 Next Steps
-
-- [ ] Build Looker Studio dashboard (3 pages)
-- [ ] Add Tableau Public visualizations
-- [ ] Implement predictive models (default risk)
-- [ ] Add incremental refresh monitoring
-- [ ] Create CI/CD pipeline with GitHub Actions
-
-## 👤 Author
-
-**Fatima Farman**
-- LinkedIn: [linkedin.com/in/fatima-farman](https://www.linkedin.com/in/fatima-farman)
-- GitHub: [@FATIMA-FARMAN](https://github.com/FATIMA-FARMAN)
-- Domain: Analytics Engineering | Payments Analytics | Fintech
+![dbt](https://img.shields.io/badge/dbt-FF694B?style=flat-square&logo=dbt&logoColor=white)
+![SQL](https://img.shields.io/badge/SQL-4479A1?style=flat-square&logo=postgresql&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
+![Airflow](https://img.shields.io/badge/Airflow-017CEE?style=flat-square&logo=apache-airflow&logoColor=white)
+![DuckDB](https://img.shields.io/badge/DuckDB-FFF000?style=flat-square&logo=duckdb&logoColor=black)
 
 ---
 
-⭐ **Star this repo** if you find it useful for learning dbt or BNPL analytics!
+## Business Context
 
-📧 **Interested in collaboration?** Feel free to reach out!
+BNPL platforms live or die on **checkout completion**. A 1% drop in conversion at any stage of the purchase flow translates directly to lost GMV. This project builds the full analytics layer to monitor, diagnose, and improve checkout performance — the same problem a Senior Product Analyst on a Checkout Core team owns day-to-day.
+
+---
+
+## What This Solves
+
+| Business Problem | Analytics Solution Built |
+|---|---|
+| Why are checkouts failing? | Checkout funnel conversion by stage, device, merchant |
+| Which merchants underperform? | Merchant tier scorecards with GMV, approval rate, default rate |
+| Which customers are high risk? | Risk scoring model based on repayment behaviour |
+| Is our portfolio healthy? | Installment-level delinquency tracking + early warning signals |
+| What drives successful checkout? | A/B test framework for flow experiments |
+| Can non-analysts access this? | Self-serve Looker Studio dashboard with pre-built metrics |
+
+---
+
+## Checkout Funnel Analysis
+
+The core product metric — tracking every step of the BNPL purchase flow from initiation to successful completion:
+
+```
+Checkout Initiated → Risk Check → Approval → Payment Plan Selected → Order Confirmed
+      100%             87.3%        79.1%           76.4%                 72.8%
+```
+
+**Key metrics tracked:**
+- Checkout completion rate (overall + by merchant, device, product category)
+- Stage-level drop-off rate with root cause segmentation
+- Approval rate by customer risk tier
+- Payment plan selection rate (3-month vs 6-month vs 12-month split)
+
+```sql
+-- Checkout funnel conversion by stage
+SELECT
+    funnel_stage,
+    stage_order,
+    COUNT(*)                                                        AS sessions,
+    ROUND(COUNT(*) * 100.0 / FIRST_VALUE(COUNT(*)) OVER (
+        ORDER BY stage_order
+        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+    ), 1)                                                           AS completion_rate,
+    ROUND(100.0 - COUNT(*) * 100.0 / LAG(COUNT(*)) OVER (
+        ORDER BY stage_order), 1)                                   AS stage_dropoff_rate
+FROM checkout_events
+GROUP BY funnel_stage, stage_order
+ORDER BY stage_order;
+```
+
+---
+
+## A/B Testing Framework
+
+Built to support hypothesis-driven product decisions on the checkout flow:
+
+**Example experiment: Simplified payment plan selection screen**
+- **Hypothesis:** Reducing plan options from 4 → 2 at checkout increases completion rate
+- **Metric:** Checkout completion rate (primary), AOV (guardrail)
+- **Method:** Two-proportion z-test, 95% confidence, MDE = 2%
+
+```python
+import numpy as np
+from scipy import stats
+
+def checkout_ab_test(control_conversions, control_sessions,
+                     treatment_conversions, treatment_sessions):
+    p_control   = control_conversions / control_sessions
+    p_treatment = treatment_conversions / treatment_sessions
+    p_pooled    = (control_conversions + treatment_conversions) / (control_sessions + treatment_sessions)
+
+    se = np.sqrt(p_pooled * (1 - p_pooled) * (1/control_sessions + 1/treatment_sessions))
+    z_score = (p_treatment - p_control) / se
+    p_value = 2 * (1 - stats.norm.cdf(abs(z_score)))
+
+    return {
+        "control_rate":   round(p_control * 100, 2),
+        "treatment_rate": round(p_treatment * 100, 2),
+        "lift":           round((p_treatment - p_control) * 100, 2),
+        "p_value":        round(p_value, 4),
+        "significant":    p_value < 0.05
+    }
+```
+
+---
+
+## Data Architecture
+
+```
+Sources (raw)
+    └── stg_transactions        # cleaned, typed payment events
+    └── stg_merchants           # merchant profiles + tier classification
+    └── stg_customers           # customer identity + risk attributes
+    └── stg_installments        # installment schedules + payment status
+
+Intermediate (business logic)
+    └── int_checkout_funnel     # stage-by-stage funnel reconstruction
+    └── int_customer_risk       # risk scoring: repayment history + behaviour signals
+    └── int_merchant_health     # GMV, approval rate, default rate per merchant
+
+Marts (self-serve, BI-ready)
+    └── fct_checkout_events     # grain: one row per checkout attempt
+    └── fct_installments        # grain: one row per installment
+    └── dim_customers           # customer segments + risk tiers
+    └── dim_merchants           # merchant tiers + partner performance
+    └── mart_checkout_funnel    # pre-aggregated funnel metrics for dashboards
+    └── mart_portfolio_health   # delinquency, default rate, GMV at risk
+```
+
+**60 automated dbt tests** — primary key uniqueness, referential integrity, accepted values, custom business rules (e.g. installment amounts sum to order total).
+
+---
+
+## Merchant & Partner Analytics
+
+Supports BD and partner discussions with structured merchant scorecards:
+
+| Metric | Description |
+|---|---|
+| GMV by merchant tier | Revenue contribution: Premium / Standard / New |
+| Approval rate | % of checkout attempts approved per merchant category |
+| Default rate | % of orders with missed installments |
+| Fraud indicator rate | Flagged transactions as % of total volume |
+| Customer LTV by merchant | Repeat purchase rate and basket size trends |
+
+---
+
+## Self-Serve Dashboard (Looker Studio)
+
+Built for product and business stakeholders — no SQL required:
+
+- **Checkout Health**: completion rate, drop-off by stage, daily trend
+- **Merchant Scorecard**: GMV, approval rate, default rate by tier
+- **Portfolio Risk**: delinquency rate, 30/60/90 day buckets
+- **Customer Segments**: Premium / Standard / New split with behaviour profiles
+
+Daily refresh via Airflow DAG (`dbt deps → dbt run → dbt test`, 2AM UTC).
+
+---
+
+## Key Results
+
+| Metric | Value |
+|---|---|
+| Total GMV analysed | $9,124,346 |
+| Transactions | 50,000 |
+| Checkout completion rate | 72.8% |
+| BNPL adoption rate | 77.3% |
+| On-time payment rate | 93.7% |
+| Default rate | 0.4% |
+| Active merchants | 40 (Fashion, Electronics, Home, Beauty) |
+| Automated dbt tests | 60 (100% pass rate) |
+
+---
+
+## Tech Stack
+
+| Layer | Tool |
+|---|---|
+| Transformation | dbt (staging → intermediate → marts) |
+| Warehouse | DuckDB (local) · BigQuery (production-compatible) |
+| Orchestration | Apache Airflow — daily DAG |
+| BI / Self-serve | Looker Studio |
+| Language | SQL (91%) · Python (9%) |
+| Testing | dbt-utils · dbt-expectations |
+| Event Analytics | Compatible with Amplitude event schema |
+
+---
+
+## How to Run
+
+```bash
+pip install -r requirements.txt
+dbt debug
+dbt run
+dbt test
+# Trigger Airflow DAG: bnpl_analytics_daily
+```
